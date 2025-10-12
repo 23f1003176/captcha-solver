@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Captcha Solver</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <h1>Captcha Solver 🔍</h1>
+  <p>Pass ?url=<image_url> to load a captcha image</p>
+
+  <img id="captcha-img" width="200" alt="Captcha will appear here" />
+  <p id="status">Loading captcha...</p>
+  <p><strong>Solved Text:</strong> <span id="result">Pending...</span></p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const imgUrl = params.get('url') || 'sample.png';
+    document.getElementById('captcha-img').src = imgUrl;
+
+    async function solveCaptcha() {
+      document.getElementById('status').textContent = 'Solving...';
+      const result = await Tesseract.recognize(imgUrl, 'eng');
+      document.getElementById('result').textContent = result.data.text.trim();
+      document.getElementById('status').textContent = '✅ Solved!';
+    }
+
+    window.onload = solveCaptcha;
+  </script>
+</body>
+</html>

@@ -1,31 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Captcha Solver</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Solver</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        .captcha-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        #captchaImage {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        #solvedText {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <h1>Captcha Solver 🔍</h1>
-  <p>Pass ?url=<image_url> to load a captcha image</p>
 
-  <img id="captcha-img" width="200" alt="Captcha will appear here" />
-  <p id="status">Loading captcha...</p>
-  <p><strong>Solved Text:</strong> <span id="result">Pending...</span></p>
+    <div class="container captcha-container">
+        <h1>Captcha Solver</h1>
+        <img id="captchaImage" src="" alt="Captcha Image" class="img-fluid">
+        <div id="loadingIndicator" class="loading-spinner" style="display: none;"></div>
+        <div id="solvedText"></div>
+    </div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const imgUrl = params.get('url') || 'sample.png';
-    document.getElementById('captcha-img').src = imgUrl;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const imageUrl = urlParams.get('url');
+            const captchaImage = document.getElementById('captchaImage');
+            const solvedText = document.getElementById('solvedText');
+            const loadingIndicator = document.getElementById('loadingIndicator');
 
-    async function solveCaptcha() {
-      document.getElementById('status').textContent = 'Solving...';
-      const result = await Tesseract.recognize(imgUrl, 'eng');
-      document.getElementById('result').textContent = result.data.text.trim();
-      document.getElementById('status').textContent = '✅ Solved!';
-    }
+            if (imageUrl) {
+                captchaImage.src = imageUrl;
+                captchaImage.onload = solveCaptcha; // Solve after image loads
+            } else {
+                solvedText.textContent = 'Please provide the image URL via the "url" query parameter.';
+            }
 
-    window.onload = solveCaptcha;
-  </script>
+            function solveCaptcha() {
+              loadingIndicator.style.display = 'block';
+                // Simulate captcha solving (replace with actual solving logic)
+                const solvingPromise = new Promise((resolve) => {
+                    setTimeout(() => {
+                        const solvedCaptchaText = generateRandomString(6); // Simulate solved text
+                        resolve(solvedCaptchaText);
+                    }, 5000); // Simulate solving time
+                });
+
+                Promise.race([
+                    solvingPromise,
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Captcha solving timed out')), 15000)
+                    )
+                ])
+                .then(solvedTextValue => {
+                    loadingIndicator.style.display = 'none';
+                    solvedText.textContent = 'Solved: ' + solvedTextValue;
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    solvedText.textContent = 'Error: ' + error.message;
+                });
+            }
+
+            function generateRandomString(length) {
+                let result = '';
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                const charactersLength = characters.length;
+                for (let i = 0; i < length; i++) {
+                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                }
+                return result;
+            }
+        });
+    </script>
 </body>
 </html>
